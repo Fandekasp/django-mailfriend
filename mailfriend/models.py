@@ -10,7 +10,7 @@ class MailedItem(models.Model):
     object_id = models.IntegerField()
     content_object = generic.GenericForeignKey()
     mailed_by = models.ForeignKey(User)
-    mailed_to = models.EmailField()
+    mailed_to = models.CharField(max_length=255)
     user_email_as_from = models.BooleanField(default=False)
     send_to_user_also = models.BooleanField(default=False)
     date_mailed = models.DateTimeField(default=datetime.datetime.now, 
