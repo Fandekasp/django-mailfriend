@@ -101,7 +101,7 @@ def mail_item_to_friend_send(request):
         message = message_template.render(message_context)
         
         # send email
-        recipient_list = [mailed_item.mailed_to]
+        recipient_list = mailed_item.mailed_to.split(',')
         if mailed_item.send_to_user_also:
             recipient_list.append(request.user.email)
         if mailed_item.user_email_as_from:
