@@ -1,4 +1,7 @@
 from django import forms
+from django.core.validators import email_re
+from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
 
 from mailfriend.models import MailedItem
 from mailfriend.utils import generic_object_get
@@ -23,3 +26,8 @@ class MailedItemForm(forms.ModelForm):
         obj_pk = int(self.data['object_id'])
         return generic_object_get(ct_pk, obj_pk)
         
+    def clean_mailed_to(self):
+        for address in self.cleaned_data['mailed_to'].split(','):
+            if not email_re.match(address):
+                raise ValidationError(_(u'Invalid e-mail address "%s"') % address)
+        return self.cleaned_data['mailed_to']
