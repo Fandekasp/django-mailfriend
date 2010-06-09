@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from mailfriend.models import MailedItem
-from mailfriend.utils import generic_object_get
+from mailfriend.utils import generic_object_get, split
 
 class MailedItemForm(forms.ModelForm):
     class Meta:
@@ -27,7 +27,7 @@ class MailedItemForm(forms.ModelForm):
         return generic_object_get(ct_pk, obj_pk)
         
     def clean_mailed_to(self):
-        for address in self.cleaned_data['mailed_to'].split(','):
+        for address in split(self.cleaned_data['mailed_to']):
             if not email_re.match(address):
                 raise ValidationError(_(u'Invalid e-mail address "%s"') % address)
         return self.cleaned_data['mailed_to']

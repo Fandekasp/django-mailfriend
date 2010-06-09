@@ -18,7 +18,7 @@ except ImportError:
     from django.core.mail import send_mail
 
 from mailfriend.forms import MailedItemForm
-from mailfriend.utils import generic_object_get
+from mailfriend.utils import generic_object_get, split
 
 @login_required
 def mail_item_to_friend_form(request, content_type_id, object_id):
@@ -101,7 +101,7 @@ def mail_item_to_friend_send(request):
         message = message_template.render(message_context)
         
         # send email
-        recipient_list = mailed_item.mailed_to.split(',')
+        recipient_list = split(mailed_item.mailed_to)
         if mailed_item.send_to_user_also:
             recipient_list.append(request.user.email)
         if mailed_item.user_email_as_from:
