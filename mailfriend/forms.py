@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 try:
     from django.core.validators import email_re
@@ -32,5 +31,5 @@ class MailedItemForm(forms.ModelForm):
     def clean_mailed_to(self):
         for address in split(self.cleaned_data['mailed_to']):
             if not email_re.match(address):
-                raise ValidationError(_(u'Invalid e-mail address "%s"') % address)
+                raise forms.ValidationError(_(u'Invalid e-mail address "%s"') % address)
         return self.cleaned_data['mailed_to']
