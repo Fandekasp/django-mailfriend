@@ -8,14 +8,7 @@ from django.template import RequestContext, loader, Context
 from django.conf import settings
 
 from django.contrib.auth.decorators import login_required
-
-# If djano-mailer (http://code.google.com/p/django-mailer/) is available,
-# favor it. Otherwise, just use django.core.mail. Thanks to brosner for the
-# suggestion (you can also blame him if this doesn't work. Joking. Sort of.)
-try:
-    from mailer import send_mail
-except ImportError:
-    from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 
 from mailfriend.forms import MailedItemForm
 from mailfriend.utils import generic_object_get, split
@@ -108,8 +101,8 @@ def mail_item_to_friend_send(request):
             from_address = request.user.email
         else:
             from_address = settings.DEFAULT_FROM_EMAIL
-        send_mail(subject, message, from_address, 
-                  recipient_list, fail_silently=False)
+        EmailMessage(subject, message, from_address, 
+            recipient_list, headers = {'Reply-To': request.user.email}).send()
         
         # save email to database
         mailed_item.date_mailed = datetime.datetime.now()
