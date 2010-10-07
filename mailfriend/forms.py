@@ -1,7 +1,10 @@
 from django import forms
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-from django.forms.fields import email_re
+try:
+    from django.core.validators import email_re
+except ImportError:
+    from django.forms.fields import email_re
 
 from mailfriend.models import MailedItem
 from mailfriend.utils import generic_object_get, split
