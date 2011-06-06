@@ -111,7 +111,7 @@ def mail_item_to_friend_send(request):
         mailed_item.mailed_by = sending_user
         mailed_item.save()
 
-        context = Context({'object': obj})
+        context = {'object': obj}
         return render_to_response('mailfriend/sent.html', context,
                                   context_instance=RequestContext(request))
 
