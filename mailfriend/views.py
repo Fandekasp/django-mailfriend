@@ -13,6 +13,7 @@ from django.core.mail import EmailMessage
 from mailfriend.forms import MailedItemForm
 from mailfriend.utils import generic_object_get, split
 
+
 @login_required
 def mail_item_to_friend_form(request, content_type_id, object_id):
     """
@@ -30,24 +31,25 @@ def mail_item_to_friend_form(request, content_type_id, object_id):
     **Template**
 
     mailfriend/form.html
-    
+
     """
 
     try:
-        content_type, obj = generic_object_get(int(content_type_id), 
+        content_type, obj = generic_object_get(int(content_type_id),
                                                int(object_id))
         obj.get_absolute_url()
     except (ObjectDoesNotExist, AttributeError):
-        raise Http404, "Invalid -- the object ID was invalid or does not have a get_absolute_url() method"
-    initial_data = {'content_type':content_type.pk, 'object_id':obj.pk}
+        raise Http404("Invalid -- the object ID was invalid or does not "
+            "have a get_absolute_url() method")
+    initial_data = {'content_type': content_type.pk, 'object_id': obj.pk}
     form = MailedItemForm(initial=initial_data)
     context = {
         'content_type': content_type,
         'form': form,
         'object': obj,
     }
-    return render_to_response('mailfriend/form.html', 
-                              context, context_instance=RequestContext(request))
+    return render_to_response('mailfriend/form.html',
+        context, context_instance=RequestContext(request))
 
 
 @login_required
@@ -63,28 +65,28 @@ def mail_item_to_friend_send(request):
     **Template**
 
     mailfriend/sent.html
-    
+
     """
     if not request.POST:
-        raise Http404, "Only POSTs are allowed"
+        raise Http404("Only POSTs are allowed")
     form = MailedItemForm(request.POST)
     try:
         content_type, obj = form.check_generic_object()
     except ObjectDoesNotExist:
-        raise Http404, "Object does not exist"
+        raise Http404("Object does not exist")
     if form.is_valid():
         mailed_item = form.save(commit=False)
-        
+
         # build full object URL
         site = Site.objects.get_current()
         site_url = 'http://%s/' % site.domain
         url_to_mail = 'http://%s%s' % (site.domain, obj.get_absolute_url())
-        
+
         # render email
         sending_user = request.user
         subject = "You have received a link"
         message_template = loader.get_template('mailfriend/email_message.txt')
-        message_context = Context({ 
+        message_context = Context({
             'site': site,
             'site_url': site_url,
             'object': obj,
@@ -92,7 +94,7 @@ def mail_item_to_friend_send(request):
             'sending_user': sending_user,
         })
         message = message_template.render(message_context)
-        
+
         # send email
         recipient_list = split(mailed_item.mailed_to)
         if mailed_item.send_to_user_also:
@@ -101,18 +103,18 @@ def mail_item_to_friend_send(request):
             from_address = request.user.email
         else:
             from_address = settings.DEFAULT_FROM_EMAIL
-        EmailMessage(subject, message, from_address, 
-            recipient_list, headers = {'Reply-To': request.user.email}).send()
-        
+        EmailMessage(subject, message, from_address,
+            recipient_list, headers={'Reply-To': request.user.email}).send()
+
         # save email to database
         mailed_item.date_mailed = datetime.datetime.now()
         mailed_item.mailed_by = sending_user
         mailed_item.save()
-        
-        context = Context({ 'object': obj })
-        return render_to_response('mailfriend/sent.html', context, 
+
+        context = Context({'object': obj})
+        return render_to_response('mailfriend/sent.html', context,
                                   context_instance=RequestContext(request))
-                                  
+
     # form is invalid
     else:
         return render_to_response('mailfriend/form.html',  {
@@ -120,4 +122,3 @@ def mail_item_to_friend_send(request):
             'form': form,
             'object': obj,
         }, context_instance=RequestContext(request))
-  
